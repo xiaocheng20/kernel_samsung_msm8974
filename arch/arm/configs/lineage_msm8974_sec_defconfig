@@ -660,5 +660,8 @@ CONFIG_TZ_ICCC=y
 
 CONFIG_POWERSUSPEND=y
 CONFIG_CPU_VOLTAGE_TABLE=y
+<<<<<<< HEAD
 CONFIG_FRANDOM=y
 CONFIG_MSM_LIMITER=y
+=======
+>>>>>>> a90764a57e56... drivers: cpufreq: Support Voltage Control
