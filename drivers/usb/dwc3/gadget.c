@@ -3121,18 +3121,24 @@ int __devinit dwc3_gadget_init(struct dwc3 *dwc)
 
 	dev_set_name(&dwc->gadget.dev, "gadget");
 
+	switch (dwc->maximum_speed) {
+		case DWC3_DCFG_SUPERSPEED:
+			dwc->gadget.max_speed = USB_SPEED_SUPER;
+			break;
+		case DWC3_DCFG_HIGHSPEED:
+			dwc->gadget.max_speed = USB_SPEED_HIGH;
+			break;
+		case DWC3_DCFG_FULLSPEED1:
+			dwc->gadget.max_speed = USB_SPEED_FULL;
+			break;
+		case DWC3_DCFG_LOWSPEED:
+			dwc->gadget.max_speed = USB_SPEED_LOW;
+			break;
+		default:
+			dwc->gadget.max_speed = USB_SPEED_SUPER;
+			break;
+	}
 	dwc->gadget.ops			= &dwc3_gadget_ops;
-#if defined(CONFIG_SEC_LT03_PROJECT) || defined(CONFIG_SEC_MONDRIAN_PROJECT)\
-	|| defined(CONFIG_SEC_KS01_PROJECT) || defined(CONFIG_SEC_PICASSO_PROJECT)\
-	|| defined(CONFIG_SEC_KACTIVE_PROJECT) || defined(CONFIG_SEC_FRESCO_PROJECT)\
-	|| defined(CONFIG_SEC_KSPORTS_PROJECT) || defined(CONFIG_SEC_JACTIVE_PROJECT)\
-	|| defined(CONFIG_SEC_S_PROJECT) || defined(CONFIG_SEC_PATEK_PROJECT)\
-	|| defined(CONFIG_SEC_CHAGALL_PROJECT) || defined(CONFIG_SEC_KLIMT_PROJECT)\
-	|| defined(CONFIG_MACH_JS01LTEDCM) || defined(CONFIG_MACH_JSGLTE_CHN_CMCC)
-	dwc->gadget.max_speed		= USB_SPEED_HIGH;
-#else
-	dwc->gadget.max_speed		= USB_SPEED_SUPER;
-#endif
 	dwc->gadget.speed		= USB_SPEED_UNKNOWN;
 	dwc->gadget.dev.parent		= dwc->dev;
 	dwc->gadget.sg_supported	= true;
