@@ -31,9 +31,6 @@
 #include <linux/of_gpio.h>
 #include <linux/regulator/consumer.h>
 #include <linux/qpnp/pin.h>
-#ifdef CONFIG_FB
-#include <linux/fb.h>
-#endif
 
 #ifdef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE
 #include <linux/input/doubletap2wake.h>
@@ -5168,12 +5165,6 @@ static void msm_tkey_led_set(struct led_classdev *led_cdev,
 #if defined(CONFIG_FB_MSM8x26_MDSS_CHECK_LCD_CONNECTION)
 extern int get_lcd_attached(void);
 #endif
-
-#ifdef CONFIG_FB
-static int fb_notifier_callback(struct notifier_block *self,
-	unsigned long event, void *data);
-#endif
-
 /**
  * synaptics_rmi4_probe()
  *
@@ -5426,13 +5417,6 @@ err_tsp_reboot:
 /* turn off touch IC, will be turned by InputRedaer */
 	synaptics_rmi4_stop_device(rmi4_data);
 #endif
-
-#ifdef CONFIG_FB
-	rmi4_data->fb_notif.notifier_call = fb_notifier_callback;
-	if (fb_register_client(&rmi4_data->fb_notif))
-		pr_err("%s: could not create fb notifier\n", __func__);
-#endif
-
 	return retval;
 
 #if defined(CONFIG_LEDS_CLASS) && defined(TOUCHKEY_ENABLE)
@@ -5554,10 +5538,6 @@ static int __devexit synaptics_rmi4_remove(struct i2c_client *client)
 	mutex_destroy(&(rmi4_data->rmi4_reset_mutex));
 	mutex_destroy(&(rmi4_data->rmi4_reflash_mutex));
 	mutex_destroy(&(rmi4_data->rmi4_device_mutex));
-
-#ifdef CONFIG_FB
-	fb_unregister_client(&rmi4_data->fb_notif);
-#endif
 
 	kfree(rmi4_data);
 #ifdef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE
@@ -6043,36 +6023,6 @@ static int synaptics_rmi4_resume(struct device *dev)
 	}
 
 	mutex_unlock(&rmi4_data->input_dev->mutex);
-
-	return 0;
-}
-#endif
-
-#ifdef CONFIG_FB
-static int fb_notifier_callback(struct notifier_block *self,
-				unsigned long event, void *data)
-{
-	struct fb_event *evdata = data;
-	struct synaptics_rmi4_data *rmi4_data =
-			container_of(self, struct synaptics_rmi4_data, fb_notif);
-
-	if (evdata && evdata->data && event == FB_EVENT_BLANK) {
-		int *blank = evdata->data;
-		switch (*blank) {
-		case FB_BLANK_UNBLANK:
-		case FB_BLANK_NORMAL:
-		case FB_BLANK_VSYNC_SUSPEND:
-		case FB_BLANK_HSYNC_SUSPEND:
-			synaptics_rmi4_resume(&rmi4_data->i2c_client->dev);
-			break;
-		case FB_BLANK_POWERDOWN:
-			synaptics_rmi4_suspend(&rmi4_data->i2c_client->dev);
-			break;
-		default:
-			/* Don't handle what we don't understand */
-			break;
-		}
-	}
 
 	return 0;
 }

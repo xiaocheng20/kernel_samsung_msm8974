@@ -44,10 +44,6 @@
  * fucntionality.
  */
 
-#ifdef CONFIG_FB
-#include <linux/notifier.h>
-#endif
-
 /* feature default mode */
 #define DEFAULT_ENABLE	1
 #define DEFAULT_DISABLE	0
@@ -1277,10 +1273,6 @@ struct synaptics_rmi4_data {
 #ifdef SYNAPTICS_RMI_INFORM_CHARGER
 	void (*register_cb)(struct synaptics_rmi_callbacks *);
 	struct synaptics_rmi_callbacks callbacks;
-#endif
-
-#ifdef CONFIG_FB
-	struct notifier_block fb_notif;
 #endif
 
 	int (*i2c_read)(struct synaptics_rmi4_data *pdata, unsigned short addr,
